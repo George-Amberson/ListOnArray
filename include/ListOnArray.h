@@ -2,8 +2,46 @@
 #include <iostream>
 #include <cmath>
 #include <exception>
-using namespace std;
+#include <sstream>
 
+using namespace std;
+template<class A1>
+class ListOnArray;
+
+template<class A3>
+class ListOnArrayIterator
+{
+private:
+	ListOnArray<A3> &link;
+	int index;
+public:
+	ListOnArrayIterator(ListOnArray<A3>& _lhs,int _index=-1) :link(_lhs),index(_index) {}
+	ListOnArrayIterator(ListOnArrayIterator& _lhs) :link(_lhs.link), index(_lhs.index) {}
+	ListOnArrayIterator& operator =(const ListOnArrayIterator& _lhs)
+	{
+		index = _lhs.index;
+		return(*this);
+	}
+	ListOnArrayIterator operator ++(int)
+	{
+		if (index != -1) index = link.links[index];
+		return (*this);
+	}
+	template<class A4>
+	friend bool operator !=(const ListOnArrayIterator<A4>& _lhs,const ListOnArrayIterator<A4>&_rhs)
+	{
+			if (_lhs.index == _rhs.index)
+			{
+				return false;
+			}
+		return true;
+	}
+	A3& operator *()
+	{
+		if (this->index == -1) throw logic_error("end iterator");
+		return(link.data[index]);
+	}
+};
 
 template<class A1>
 class ListOnArray
@@ -56,6 +94,14 @@ public:
 	int GetSize()
 	{
 		return size;
+	}
+	ListOnArrayIterator<A1> begin()
+	{
+		return(ListOnArrayIterator<A1>((*this),root));
+	}
+	ListOnArrayIterator<A1> end()
+	{
+		return(ListOnArrayIterator<A1>((*this)));
 	}
 	void push_back(const A1& lhs)
 	{
@@ -121,7 +167,6 @@ public:
 				j = links[j];
 			}
 			links[links[j]] = -2;
-			j = links[j];
 			links[j] = -1;
 		}
 		else
@@ -133,12 +178,43 @@ public:
 		DataCount--;
 		return tmp;
 	}
-	
-	
+	stringstream GCD(int k)
+	{
+		if (this->IsEmpty()) throw logic_error("container is empty");
+		int j = root;
+		stringstream s;
+
+		while (j != -1)
+		{
+			if (data[j] % k == 0)s << data[j] << " ";
+			j = links[j];
+		}
+		return s;
+	}
+	template<class A2>
+	friend class ListOnArrayIterator;
+	void reverse()
+	{
+		if (this->IsEmpty()) throw logic_error("container is empty");
+		int tec = root;
+		int prev = -1;
+		int next = 0;
+		while (tec != -1)
+		{
+			next = links[tec];
+			links[tec] = prev;
+			prev = tec;
+			tec = next;
+
+		}
+		root = prev;
+	}
 private:
+
 	A1* data;
 	int* links;
 	int root;
 	int size;
 	int DataCount;
 };
+	
